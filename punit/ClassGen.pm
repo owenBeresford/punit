@@ -93,7 +93,7 @@ sub setUp {
 
 # You must edit to set param, enable line at the at point
 # \$obj	= $name ->new( );
-# yada
+# XXX
 }
 
 EOPERL
@@ -106,7 +106,7 @@ sub getTearDown {
 	my $out		=<<EOPERL;
 sub tearDown {
 	my \$self  = shift;
-# yada
+# XXX
 }
 
 EOPERL
@@ -136,10 +136,12 @@ sub getAll {
 	$out		.= $self->getSetUp($name); 
 	$out		.= $self->getTearDown($name); 
 	for my $func (@list) {
+# not allowed param to these functions
 		$out	.=<<EOPERL;
 sub test$func {
 	my (\$self)		= \@_;
 
+# XXX
 EOPERL
 	
 		$out	.= $self->getFunctionIntro($func);  
