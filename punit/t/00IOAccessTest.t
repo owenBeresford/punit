@@ -9,7 +9,7 @@ use Test::Assert ':assert';
 use Try::Tiny;
 
 use_ok( 'punit::IOAccess');
-my $t= punit::IOAccess->new();
+my $t= punit::IOAccess->new(0);
 
 assert_isa('punit::IOAccess', $t, "have right object");
 
