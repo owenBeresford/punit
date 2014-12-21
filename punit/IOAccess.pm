@@ -4,7 +4,7 @@ use 5.10.2;
 
 {
 package punit::IOAccess;
-use Symbol::Table;
+use Class::Inspector;
 use Try::Tiny ();
 use Exception::Class (
 		'BaseException',
@@ -30,13 +30,11 @@ use Exception::Class (
 	sub listAPI {
 		my ($self, $class) = @_;
 		my @out;
-		my $st	=Symbol::Table->New('CODE', $class);
+		my $methods = Class::Inspector->methods( $class );
 
-		for my $func (keys %{$st}) {
+		for my $func (@$methods) {
 			print "listAPI: looking at '$func'." if($main::DEBUG);
 
-print("The private functions are being filtered by the Symbol::Table library WW $func, ".$self->{private}." ". $func =~ m/^_/ );
-			
 			next if ($func eq 'new');
 			next if (!$self->{private} && $func =~ m/^_/);
 
