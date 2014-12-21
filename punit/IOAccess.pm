@@ -19,7 +19,7 @@ use Exception::Class (
 		my ($caller, $priva)  		= @_;
 		my $class = ref($caller) || $caller;
 
-		my $hash 			= { private =>$priva };
+		my $hash 			= { private =>$priva || 0 };
 		bless($hash, $class);
 		return $hash;  # currently no class vars
 	}
