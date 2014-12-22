@@ -3,11 +3,13 @@ use warnings;
 
 {
 package punit::TestCase;
-use Test::Assert;
-use Test::More;
-use base 'Test::Assert';
-use punit::IOAccess;
-use Scalar::Util;
+use Test::More ;
+use Test::Exception;
+use punit::IOAccess ();
+use Scalar::Util ();
+use Exporter 'import';
+use version;
+use Data::Dumper;  # while testing the test case, you are bound to need this...
 
 use Exception::Class (
 		'Exception', 
@@ -18,6 +20,10 @@ use Exception::Class (
       },
 );
 
+our @EXPORT = ();
+our @EXPORT_OK = qw( run );
+our $VERSION = '0.1.2';
+
 sub new {
  	my ($class, $clone) = @_;
 
@@ -25,7 +31,9 @@ sub new {
 				obj => undef(), 
 				};
 	if($clone && Scalar::Util::blessed( $clone) && $clone->isa(__PACKAGE__)) {
-		$self->{obj}=$clone->{obj};
+		for my $key (keys %{$clone}) {
+			$self->{$key}=$clone->{$key};
+		}
 	}
 	bless( $self, ref($clone) || $class); 
 	return $self;

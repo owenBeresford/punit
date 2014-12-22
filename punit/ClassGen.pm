@@ -11,6 +11,11 @@ ASSERT: Some people have weird ideas on how to indent, please don't.  Please per
 
 {
 package punit::ClassGen;
+use Exporter 'import';
+use version;
+our @EXPORT = ();
+our @EXPORT_OK = qw(getFunctionOutro getFunctionIntro getPackageIntro getPackageOutro getSetUp getTearDown getDocs getAll );
+our $VERSION = '0.1.6';
 
 sub new {
 	my ($caller) = @_;
@@ -141,11 +146,10 @@ sub getAll {
 sub test$func {
 	my (\$self)		= \@_;
 
-# XXX
 EOPERL
 	
 		$out	.= $self->getFunctionIntro($func);  
-
+		$out    .= "  # XXX \n";
 		$out	.= $self->getFunctionOutro($func);  
 		$out	.=<<EOPERL;
 

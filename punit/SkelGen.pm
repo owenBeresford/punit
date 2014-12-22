@@ -7,6 +7,12 @@ our $DEBUG=0;
 package punit::SkelGen;
 use punit::IOAccess;
 use punit::ClassGen;
+use Exporter 'import';
+use version;
+
+our @EXPORT = ();
+our @EXPORT_OK = qw( generateTest );
+our $VERSION = '0.1.3';
 
 sub new {
 	my ($class, $inCls, $private, $db) = @_;
@@ -27,7 +33,7 @@ sub new {
 	return $self;
 }
 
-sub generate {
+sub generateTest {
 	my ($self ) = @_;
 	
 	my @decls	= $self->{IO}->listAPI($self->{inClass});
@@ -73,6 +79,5 @@ unless(caller()) {
 	my $t		= punit::SkelGen->new($options{'i'}, 0, $options{'d'});
 	my $ret		= $t->generate();
 	print $ret  if($DEBUG);
-
 }
 1;
