@@ -39,23 +39,11 @@ our $VERSION = '0.1.1';
 	sub listAPI {
 		my ($self, $class) = @_;
 		my @out;
-#		my $methods = Class::Inspector->methods( $class );
 		my $methods = $self->_list_nonimported_subs($class); 
-
-
-#		my $parent = '';
-#		my $tmp = "\$parent = \$".$class."::ISA[ scalar(@".$class."::ISA) ] || undef(); ";
-#		eval($tmp);	
-#print "Whaqt is parent? ". Dumper $parent."\n";
 
 		for my $func (@$methods) {
 			print "listAPI: looking at '$func'." if($main::DEBUG);
 		
-#	print "can \$parent do $func? ".($parent->can($func)?"yes\n":"no\n");
-#  if($self->SUPER->can($func)) { print "method $func exists in ancestor.\n"; }
-# discard functions that are defined in the parent or higher classes.
-# doesn't cover situation where a subclass overrides a parents definition.
-#			next if ($parent && $parent->can($func));
 			next if ($func eq 'new');
 			next if (!$self->{private} && $func =~ m/^_/);
 
@@ -75,8 +63,8 @@ our $VERSION = '0.1.1';
 		my @nonimported_subs=();
 		for my $name (keys %$pkg) {
 			my $glob = $pkg->{$name};
-			my $code = *$glob{CODE}
-			or next;
+# drop all non CODE types.
+			my $code = *$glob{CODE} or next;
 
 			my $cv = svref_2object($code);
 			my $orig_pkg_name = $cv->GV->STASH->NAME;
