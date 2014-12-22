@@ -18,23 +18,21 @@ if( -f './punit/t/IOAccessTest.t') {
 
 # rattle through these, then repeat for fixtures
 # must do fixtures for the private functions etc.
-assert_equals( $t->generate(), $t, "Should be able to make a fresh unit test");
+assert_equals( $t->generateTest(), $t, "Should be able to make a fresh unit test");
 
 assert_equals( $t->setTarget('punit::ClassGen'), $t, "Change to classGen" );
-assert_equals( $t->generate(), $t, "Should be able to make a fresh unit test");
+assert_equals( $t->generateTest(), $t, "Should be able to make a fresh unit test");
 
 assert_equals( $t->setTarget('punit::TestCase'), $t, "Change to TestCase" );
-assert_equals( $t->generate(), $t, "Should be able to make a fresh unit test");
+assert_equals( $t->generateTest(), $t, "Should be able to make a fresh unit test");
 
 assert_equals( $t->setTarget('punit::SkelGen'), $t, "Change to SkelGen" );
-assert_equals( $t->generate(), $t, "Should be able to make a fresh unit test");
+assert_equals( $t->generateTest(), $t, "Should be able to make a fresh unit test");
 
 # with hide private...
 $t= punit::SkelGen->new('punit::SkelGen', 1, 0);
 rename('./punit/t/SkelGenTest.t', './punit/t/SkelGenTest.noprivate.t'); 
-assert_equals( $t->generate(), $t, "Should be able to make a fresh unit test");
-
-
+assert_equals( $t->generateTest(), $t, "Should be able to make a fresh unit test");
 
 done_testing();
 
