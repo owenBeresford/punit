@@ -4,7 +4,6 @@ use 5.10.2;
 
 {
 package punit::IOAccess;
-use Class::Inspector;
 use Try::Tiny ();
 use Exporter 'import';
 use version;
@@ -68,6 +67,7 @@ our $VERSION = '0.1.1';
 
 			my $cv = svref_2object($code);
 			my $orig_pkg_name = $cv->GV->STASH->NAME;
+# compare the package name
 			next if $orig_pkg_name ne $pkg_name;
 
 			push @nonimported_subs, $name;
