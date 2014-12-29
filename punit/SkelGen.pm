@@ -77,7 +77,7 @@ unless(caller()) {
 	}
 	
 	my $t		= punit::SkelGen->new($options{'i'}, 0, $options{'d'});
-	my $ret		= $t->generate();
+	my $ret		= $t->generateTest();
 	print $ret  if($DEBUG);
 }
 1;
