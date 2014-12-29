@@ -46,7 +46,7 @@ sub getPackageIntro {
 	$sname		=~ s/::/\//g;
 
 	my $out		=<<EOPERL;
-# Please read https://metacpan.org/pod/Test::Unit::Assert
+## #!/usr/bin/perl -I/home/owen/punit
 # I'm making the testee object in lexical scope (not part of the \$self which is called what?)
 # Replace all the XXX with your code
 use strict;
@@ -58,6 +58,8 @@ use punit::TestCase;
 use base 'punit::TestCase';
 use utf8;
 use Data::Dumper;  # while testing the test case, you are bound to need this...
+use Test::More;
+use Test::Exception;
 use $name;
 # use Exception classes etc.
 
