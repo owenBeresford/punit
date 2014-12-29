@@ -10,6 +10,7 @@ use Scalar::Util ();
 use Exporter 'import';
 use version;
 use Data::Dumper;  # while testing the test case, you are bound to need this...
+use Try::Tiny;
 
 use Exception::Class (
 		'Exception', 
@@ -57,10 +58,14 @@ sub run {
 				$func eq 'meta' || $func eq 'new' ) {
 			next;
 		}
-		my $tmp = $self->new($self);	
-		diag("\tcurrently running $func()\n");
-		$tmp->$func();
-		$tmp->tearDown();
+		try {
+			my $tmp = $self->new($self);	
+			diag("\tcurrently running $func()\n");
+			$tmp->$func();
+			$tmp->tearDown();
+		} catch {
+			diag($_);
+		} 
 	}
 
 }
