@@ -51,7 +51,6 @@ sub run {
 	my @funcs 	= $io->listAPI(ref($self) );
 
 	diag("I am module: $module -> run()\n");
-	$self->setUp();
 	foreach my $func (@funcs ) {
 #       meta is for Moose
 		if($func eq 'setUp' || $func eq 'tearDown' || 
@@ -60,6 +59,7 @@ sub run {
 		}
 		try {
 			my $tmp = $self->new($self);	
+			$tmp->setUp();
 			diag("\tcurrently running $func()\n");
 			$tmp->$func();
 			$tmp->tearDown();
@@ -67,7 +67,7 @@ sub run {
 			diag($_);
 		} 
 	}
-
+	done_testing();
 }
 
 
