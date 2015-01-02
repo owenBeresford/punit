@@ -19,7 +19,9 @@ Param for SkelGen
    -d            : run in DEBUG (output & doesn't write files)
    -p            : include private functions
 
-This will make test scripts in the relevant 't' sub directory.
+This will make test scripts in the relevant 't' sub directory.  Will make 't' if necessary.  This is currently too picky about `pwd`, but this will change.
+If not obvious, you MUST HAVE WRITE ACCESS.
+
 If you have non-standard code layout, please refer to the manualloader.example.pl
 
 EOTEXT
@@ -101,7 +103,8 @@ unless(caller()) {
 	my %options	= ();
 	getopts("i:hdp:",\%options);
 	if($options{d}) {
-		$DEBUG++;	
+		$main::DEBUG++;
+		print("Set DEBUG flag.\n" );	
 	}
 	if($options{h}) {
 		HELP_MESSAGE(*STDOUT);
@@ -110,6 +113,6 @@ unless(caller()) {
 	
 	my $t		= punit::SkelGen->new($options{i}, $options{p}, $options{d});
 	my $ret		= $t->generateTest();
-	print $ret  if($DEBUG);
+	print $ret  if($main::DEBUG);
 }
 1;
