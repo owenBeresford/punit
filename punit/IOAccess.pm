@@ -9,6 +9,7 @@ use Exporter 'import';
 use version;
 use B qw( svref_2object );
 use Data::Dumper;
+use Class::Load qw(is_class_loaded);
 
 use Exception::Class (
 		'BaseException',
@@ -38,6 +39,14 @@ our $VERSION = '0.1.1';
 	sub listAPI {
 		my ($self, $class) = @_;
 		my @out;
+
+		if(!is_class_loaded($class)) {
+			eval("use $class;"); 
+			if( scalar $@) { 
+				BadFileException->throw("Can't load package $class. \n\n$@\n");
+			}
+		}
+
 		my $methods = $self->_list_nonimported_subs($class); 
 
 		for my $func (@$methods) {
@@ -84,6 +93,17 @@ our $VERSION = '0.1.1';
 			print "Can't create file '$name', it already exists." if($main::DEBUG);
 			BadFileException->throw("Can't create file '$name', it already exists.");
 		}
+		my @bits		=split('/', $name);
+		pop @bits; # want the array, not the scalar, so must be separate 
+		my $dirname		=join('/', @bits); 
+		if( ! -d $dirname ) {
+			if($main::DEBUG) {
+				print "Can't create file '$name', it already exists."; 
+			} else {
+				mkdir $dirname or BadFileException->throw("Unable to make 't' directory... $dirname ".`pwd`);
+			}
+		}
+
 		open( OUTPUT, ">:utf8", $name ) 
 			or BadFileException->throw("Can't create file '$name', as $!"); 
 		print OUTPUT "$data\n";
