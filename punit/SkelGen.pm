@@ -2,6 +2,31 @@
 use strict;
 use warnings;
 our $DEBUG=0;
+our $VERSION='0.1.2';
+
+
+sub HELP_MESSAGE {
+    my ( $fh, $package, $version, $switches ) = @_;
+
+# he arguments are the output file handle, the name of option-processing package, its version, and the switches string
+    print $fh <<EOTEXT;
+
+Param for SkelGen
+(im still not sure that this is the correct structure for CLI access)
+
+   -i <package>  : input package name
+   -h            : display this help
+   -d            : run in DEBUG (output & doesn't write files)
+   -p            : include private functions
+
+This will make test scripts in the relevant 't' sub directory.
+If you have non-standard code layout, please refer to the manualloader.example.pl
+
+EOTEXT
+
+}
+
+
 
 {
 package punit::SkelGen;
@@ -69,14 +94,21 @@ sub _getOutputClass {
 }
 
 unless(caller()) {
+	die("Must supply some param, try --help\n") unless @ARGV;
+
 	use Getopt::Std;
+    $Getopt::Std::STANDARD_HELP_VERSION = 1;
 	my %options	= ();
-	getopts("o:i:hd",\%options);
+	getopts("i:hdp:",\%options);
 	if($options{d}) {
 		$DEBUG++;	
 	}
+	if($options{h}) {
+		HELP_MESSAGE(*STDOUT);
+		exit(0);
+	}
 	
-	my $t		= punit::SkelGen->new($options{'i'}, 0, $options{'d'});
+	my $t		= punit::SkelGen->new($options{i}, $options{p}, $options{d});
 	my $ret		= $t->generateTest();
 	print $ret  if($DEBUG);
 }
