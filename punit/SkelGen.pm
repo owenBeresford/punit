@@ -64,7 +64,16 @@ sub generateTest {
 	my ($self ) = @_;
 	
 	my @decls	= $self->{IO}->listAPI($self->{inClass});
-	my $raw		= $self->{gen}->getAll($self->{inClass}, $self->{outClass}, @decls);
+	my %assert	= $self->{IO}->extractAssert($self->{inClass});
+	my %decls   ={};
+	foreach my $s (@decls) {
+		if(defined($assert{$s})) {
+			$decls->{$s}=$assert{$s};
+		} else {
+			$decls->{$s}="# fillin this test, no assert provided.";
+		}
+	}
+	my $raw		= $self->{gen}->getAll($self->{inClass}, $self->{outClass}, \%decls);
 
 	if($self->{debug}) {
 		return $raw;

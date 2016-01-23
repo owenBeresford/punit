@@ -7,9 +7,11 @@ package punit::IOAccess;
 use Try::Tiny ();
 use Exporter 'import';
 use version;
+use PPI;
 use B qw( svref_2object );
 use Data::Dumper;
 use Class::Load qw(is_class_loaded);
+use feature qw/switch/; 
 
 use Exception::Class (
 		'BaseException',
@@ -61,6 +63,57 @@ our $VERSION = '0.1.1';
 		
 		if(wantarray() ) { return @out; }
 		else 			 { return \@out; }
+	}
+
+	sub extractAssert {
+		my ($self, $pkg_name) = @_;
+		my $doc = PPI::Document->new($pkg_name);
+		my $list={};
+		my $op={
+					'=='=>'assert_equals',
+					'!='=>'assert_not_equals',
+					'==='=>'assert_deep_equals',
+					'!=='=>'assert_deep_not_equals',
+					'isa'=>'assert_isa',
+					'!isa'=>'assert_not_isa',
+					'>'=>'assert_true',
+					'>='=>'assert_true',
+					'<'=>'assert_true',
+					'<='=>'assert_true',
+					};
+
+
+		if (!( $doc->find_any('PPI::Token::Pod') || 
+					$doc->find_any('PPI::Token::Comment') )) {
+			print "File '$pkg_name' contains no docs\n";
+			return [];
+		}
+
+## due to thinking constraints only supporting full spec now
+## see Element->snext_sibling for in func comments
+		my $comments = $doc->find( 'PPI::Token::Comment');
+		foreach my $c ( @{$comments}) {
+			if( $c->content =~ m/\@assert/i  ) {
+				my $match=0;
+
+				$match=($c->content =~ m/^[# *\t]*\@assert[ \t]+(\$[a-zA-Z0-9_]+)->([a-zA-Z0-9_]+)\([\(.\+\)]+\)[ \t]*\([!=><isa]+\)[ \t]*\(.\+\) \("[a-zA-Z0-9 '"!£\$]%^&*()"\)/);
+	#			if(!$match) { # next syntax..
+	#			}		
+				if(defined($list->{$2})) {
+					my $length=$#{$list->{$2}};
+					$list->{$2}->[$length]=$op->{ $2 }."(\$obj->$4($5), $5, $6)";
+
+				} else {
+					$list->{$2}=[];
+					$list->{$2}->[0]=$op->{ $2 }."(\$obj->$4($5), $5, $6)";
+				}
+				
+			}
+		}
+		$doc=undef();
+		$comments=undef();
+		if(wantarray() ) { return %{$list}; }
+		else 			 { return $list; }
 	}
 
 # http://stackoverflow.com/questions/12504744/perl-list-subs-in-a-package-excluding-imported-subs-from-other-packages

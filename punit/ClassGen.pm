@@ -137,12 +137,13 @@ EOPERL
 
 
 sub getAll {
-	my ($self, $name, $class, @list) = @_;
+	my ($self, $name, $class, $reference) = @_;
+	my %list	=%{$reference};
 	my $out		='';
 	$out		.= $self->getPackageIntro($name, $class); 
 	$out		.= $self->getSetUp($name); 
 	$out		.= $self->getTearDown($name); 
-	for my $func (@list) {
+	for my $func (keys %list) {
 # not allowed param to these functions
 		$out	.=<<EOPERL;
 sub test$func {
@@ -151,7 +152,7 @@ sub test$func {
 EOPERL
 	
 		$out	.= $self->getFunctionIntro($func);  
-		$out    .= "  # XXX \n";
+		$out    .= $list{$func} ."\n";
 		$out	.= $self->getFunctionOutro($func);  
 		$out	.=<<EOPERL;
 
