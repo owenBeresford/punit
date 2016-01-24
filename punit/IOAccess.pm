@@ -28,10 +28,10 @@ our @EXPORT_OK = qw( listAPI writeTestFile createTestPath extractAssert );
 our $VERSION = '0.2.1';
 
 	sub new {
-		my ($caller, $priva)  		= @_;
+		my ($caller, $priva, $gen)  		= @_;
 		my $class = ref($caller) || $caller;
 
-		my $hash 			= { private =>$priva || 0 };
+		my $hash 			= { private =>$priva || 0, gen=>$gen };
 		bless($hash, $class);
 		return $hash;  # currently no class vars
 	}
@@ -82,19 +82,6 @@ our $VERSION = '0.2.1';
 
 			my $doc = PPI::Document->new($fl_name);
 			my $list={};
-			my $op={
-				'=='=>'assert_equals',
-				'!='=>'assert_not_equals',
-				'==='=>'assert_deep_equals',
-				'!=='=>'assert_deep_not_equals',
-				'isa'=>'assert_isa',
-				'!isa'=>'assert_not_isa',
-				'>'=>'assert_true',
-				'>='=>'assert_true',
-				'<'=>'assert_true',
-				'<='=>'assert_true',
-			};
-
 			if (!( $doc->find_any('PPI::Token::Pod') || 
 					$doc->find_any('PPI::Token::Comment') )) {
 				print "File '$pkg_name' contains no docs.\n";
@@ -109,15 +96,9 @@ our $VERSION = '0.2.1';
 						print $c->content." doesn't match anything...\n";
 						next;
 					}
+					my $exec=$self->{gen}->getTestCode(@match);
 
-					my $exec=undef();
-					my ($object, $func, $args, $test, $value, $comment) = @match;
-					if($test eq '>' || $test eq '<' || $test eq '>=' || $test eq '<=') {
-						$exec=$op->{ $test }."(\$obj->$func($args) $test $value, $comment);";
-					} else {
-						$exec=$op->{ $test }."(\$obj->$func($args), $value, $comment);";
-					}
-
+					my $func=$match[1];
 					if(defined($list->{$func})) {
 						my $length=$#{$list->{$func}};
 						$length++;
@@ -140,7 +121,9 @@ our $VERSION = '0.2.1';
 		}
 	}
 
-
+# maybe move this line parsing to PPI as well.
+# problem is, if I did that I would have better grasp in each structure, but not the values
+# my current approach loudly tells you when it gets an unknown test line.
 	sub _match {
 		my ($self, $package, $str, $line) = @_;
 		my $match;
@@ -154,8 +137,6 @@ our $VERSION = '0.2.1';
 		warn "ADD MORE CODE";
 		return [];
 	}
-
-
 
 # http://stackoverflow.com/questions/12504744/perl-list-subs-in-a-package-excluding-imported-subs-from-other-packages
 	sub _list_nonimported_subs {

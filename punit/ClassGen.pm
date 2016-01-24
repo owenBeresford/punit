@@ -41,6 +41,32 @@ sub getFunctionIntro {
 	return $out;
 }
 
+sub getTestCode {
+	my ($self, $object, $func, $args, $test, $value, $comment )= @_;
+	my $op={
+		'=='=>'assert_equals',
+		'!='=>'assert_not_equals',
+		'==='=>'assert_deep_equals',
+		'!=='=>'assert_deep_not_equals',
+		'isa'=>'assert_isa',
+		'!isa'=>'assert_not_isa',
+		'>'=>'assert_true',
+		'>='=>'assert_true',
+		'<'=>'assert_true',
+		'<='=>'assert_true',
+	};
+
+	my $exec=undef();
+
+	if($test eq '>' || $test eq '<' || $test eq '>=' || $test eq '<=') {
+		$exec=$op->{ $test }."(\$obj->$func($args) $test $value, $comment);";
+	} else {
+		$exec=$op->{ $test }."(\$obj->$func($args), $value, $comment);";
+	}
+
+	return $exec;
+}
+
 sub getPackageIntro {
 	my ($self, $name, $class ) = @_;
 	my $sname	=$name;

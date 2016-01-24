@@ -50,9 +50,9 @@ sub new {
 	# I don't need inFile, the Perl intepreter will fix that
 		outFile =>'',
 		outClass=>'',
-		IO		=>punit::IOAccess->new($private),
 		gen		=>punit::ClassGen->new()
 			};
+	$self->{IO}=punit::IOAccess->new($private, $self->{gen});
 	bless($self, $class);
 
 	$self->{outClass}=$self->_getOutputClass($inCls); 
