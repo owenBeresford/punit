@@ -11,6 +11,7 @@ use PPI;
 use B qw( svref_2object );
 use Data::Dumper;
 use Class::Load qw(is_class_loaded);
+use Module::Util qw( module_fs_path);
 use feature qw/switch/; 
 
 use Exception::Class (
@@ -23,8 +24,8 @@ use Exception::Class (
 );
 
 our @EXPORT = ();
-our @EXPORT_OK = qw( listAPI writeTestFile createTestPath );
-our $VERSION = '0.1.1';
+our @EXPORT_OK = qw( listAPI writeTestFile createTestPath extractAssert );
+our $VERSION = '0.2.1';
 
 	sub new {
 		my ($caller, $priva)  		= @_;
@@ -41,6 +42,11 @@ our $VERSION = '0.1.1';
 	sub listAPI {
 		my ($self, $class) = @_;
 		my @out;
+		my $fl_name	= module_fs_path($class);
+		if( ! -f $fl_name) {
+			print "Invalid module name '$class'.\n";
+			return [];
+		}
 
 		if(!is_class_loaded($class)) {
 			eval("use $class;"); 
@@ -67,54 +73,93 @@ our $VERSION = '0.1.1';
 
 	sub extractAssert {
 		my ($self, $pkg_name) = @_;
-		my $doc = PPI::Document->new($pkg_name);
-		my $list={};
-		my $op={
-					'=='=>'assert_equals',
-					'!='=>'assert_not_equals',
-					'==='=>'assert_deep_equals',
-					'!=='=>'assert_deep_not_equals',
-					'isa'=>'assert_isa',
-					'!isa'=>'assert_not_isa',
-					'>'=>'assert_true',
-					'>='=>'assert_true',
-					'<'=>'assert_true',
-					'<='=>'assert_true',
-					};
+		try {
+			my $fl_name	= module_fs_path($pkg_name);
+			if( ! -f $fl_name) {
+				print "Invalid module name '$pkg_name'.\n";
+				return [];
+			}
 
+			my $doc = PPI::Document->new($fl_name);
+			my $list={};
+			my $op={
+				'=='=>'assert_equals',
+				'!='=>'assert_not_equals',
+				'==='=>'assert_deep_equals',
+				'!=='=>'assert_deep_not_equals',
+				'isa'=>'assert_isa',
+				'!isa'=>'assert_not_isa',
+				'>'=>'assert_true',
+				'>='=>'assert_true',
+				'<'=>'assert_true',
+				'<='=>'assert_true',
+			};
 
-		if (!( $doc->find_any('PPI::Token::Pod') || 
+			if (!( $doc->find_any('PPI::Token::Pod') || 
 					$doc->find_any('PPI::Token::Comment') )) {
-			print "File '$pkg_name' contains no docs\n";
-			return [];
-		}
+				print "File '$pkg_name' contains no docs.\n";
+				return [];
+			}
+
 
 ## due to thinking constraints only supporting full spec now
 ## see Element->snext_sibling for in func comments
-		my $comments = $doc->find( 'PPI::Token::Comment');
-		foreach my $c ( @{$comments}) {
-			if( $c->content =~ m/\@assert/i  ) {
-				my $match=0;
+			my $comments = $doc->find( 'PPI::Token::Comment');
+			foreach my $c ( @{$comments}) {
+				if( $c->content =~ m/\@assert/i  ) {
+					print $c->content;
+					my @match= $self->_match($pkg_name, $c->content, $c->line_number);
+					if($#match==0) {
+						print $c->content." doesn't match anything...\n";
+						next;
+					}
 
-				$match=($c->content =~ m/^[# *\t]*\@assert[ \t]+(\$[a-zA-Z0-9_]+)->([a-zA-Z0-9_]+)\([\(.\+\)]+\)[ \t]*\([!=><isa]+\)[ \t]*\(.\+\) \("[a-zA-Z0-9 '"!£\$]%^&*()"\)/);
-	#			if(!$match) { # next syntax..
-	#			}		
-				if(defined($list->{$2})) {
-					my $length=$#{$list->{$2}};
-					$list->{$2}->[$length]=$op->{ $2 }."(\$obj->$4($5), $5, $6)";
+					my $exec=undef();
+					my ($object, $func, $args, $test, $value, $comment) = @match;
+					if($test eq '>' || $test eq '<' || $test eq '>=' || $test eq '<=') {
+						$exec=$op->{ $test }."(\$obj->$func($args) $test $value, $comment)";
+					} else {
+						$exec=$op->{ $test }."(\$obj->$func($args), $value, $comment)";
+					}
 
-				} else {
-					$list->{$2}=[];
-					$list->{$2}->[0]=$op->{ $2 }."(\$obj->$4($5), $5, $6)";
+					if(defined($list->{$func})) {
+						my $length=$#{$list->{$func}};
+						$length++;
+						$list->{$func}->[$length]=$exec;
+
+					} else {
+						$list->{$func}=[];
+						$list->{$func}->[0]=$exec;
+					}
+
 				}
-				
 			}
+			$doc=undef();
+			$comments=undef();
+			return $list; 
+
+		} catch {
+			print("unknown file '$pkg_name' - shouldnt happen in real use...");
+			return [];
 		}
-		$doc=undef();
-		$comments=undef();
-		if(wantarray() ) { return %{$list}; }
-		else 			 { return $list; }
 	}
+
+
+	sub _match {
+		my ($self, $package, $str, $line) = @_;
+		my $match;
+
+		$match=($str =~ m/^[# \*\t]*\@assert[ \t]+(\$[a-zA-Z0-9_]+)->([a-zA-Z0-9_]+)\(([^)]*)\)[ \t]*([!=><isa]+)[ \t]*([^ ]+)[ \t]+("[a-zA-Z0-9 '"!£\$%\^&*\(\)]+")/);
+		return ($1, $2, $3, $4, $5, $6) if($match>0) ;
+
+		$match=($str =~ m/^[# \*\t]*\@assert[ \t]+(\$[a-zA-Z0-9_]+)->([a-zA-Z0-9_]+)\(([^)]*)\)[ \t]*([!=><isa]+)[ \t]*(.+)/);
+		return ($1, $2, $3, $4, $5, "\"".$package."#".$line."\"") if($match>0) ;
+
+		warn "ADD MORE CODE";
+		return [];
+	}
+
+
 
 # http://stackoverflow.com/questions/12504744/perl-list-subs-in-a-package-excluding-imported-subs-from-other-packages
 	sub _list_nonimported_subs {
