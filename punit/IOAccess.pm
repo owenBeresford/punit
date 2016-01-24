@@ -101,13 +101,9 @@ our $VERSION = '0.2.1';
 				return [];
 			}
 
-
-## due to thinking constraints only supporting full spec now
-## see Element->snext_sibling for in func comments
 			my $comments = $doc->find( 'PPI::Token::Comment');
 			foreach my $c ( @{$comments}) {
 				if( $c->content =~ m/\@assert/i  ) {
-					print $c->content;
 					my @match= $self->_match($pkg_name, $c->content, $c->line_number);
 					if($#match==0) {
 						print $c->content." doesn't match anything...\n";

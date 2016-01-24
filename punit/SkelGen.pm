@@ -4,7 +4,6 @@ use warnings;
 our $DEBUG=0;
 our $VERSION='0.1.2';
 
-
 sub HELP_MESSAGE {
     my ( $fh, $package, $version, $switches ) = @_;
 
@@ -36,6 +35,7 @@ use punit::IOAccess;
 use punit::ClassGen;
 use Exporter 'import';
 use version;
+use Data::Dumper;
 
 our @EXPORT = ();
 our @EXPORT_OK = qw( generateTest );
@@ -64,16 +64,16 @@ sub generateTest {
 	my ($self ) = @_;
 	
 	my @decls	= $self->{IO}->listAPI($self->{inClass});
-	my %assert	= $self->{IO}->extractAssert($self->{inClass});
-	my %decls   ={};
+	my $assert	= $self->{IO}->extractAssert($self->{inClass});
+	my %decls2  = ();
 	foreach my $s (@decls) {
-		if(defined($assert{$s})) {
-			$decls->{$s}=$assert{$s};
+		if(defined($assert->{$s})) {
+			$decls2{$s}=$assert->{$s};
 		} else {
-			$decls->{$s}="# fillin this test, no assert provided.";
+			$decls2{$s}="# fillin this test, no assert provided.";
 		}
 	}
-	my $raw		= $self->{gen}->getAll($self->{inClass}, $self->{outClass}, \%decls);
+	my $raw		= $self->{gen}->getAll($self->{inClass}, $self->{outClass}, \%decls2);
 
 	if($self->{debug}) {
 		return $raw;
