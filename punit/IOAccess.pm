@@ -58,7 +58,7 @@ our $VERSION = '0.2.1';
 		my $methods = $self->_list_nonimported_subs($class); 
 
 		for my $func (@$methods) {
-			print "listAPI: looking at '$func'." if($main::DEBUG);
+			print "listAPI: looking at '$func'.\n" if($main::DEBUG);
 		
 			next if ($func eq 'new');
 			next if (!$self->{private} && $func =~ m/^_/);
@@ -113,9 +113,9 @@ our $VERSION = '0.2.1';
 					my $exec=undef();
 					my ($object, $func, $args, $test, $value, $comment) = @match;
 					if($test eq '>' || $test eq '<' || $test eq '>=' || $test eq '<=') {
-						$exec=$op->{ $test }."(\$obj->$func($args) $test $value, $comment)";
+						$exec=$op->{ $test }."(\$obj->$func($args) $test $value, $comment);";
 					} else {
-						$exec=$op->{ $test }."(\$obj->$func($args), $value, $comment)";
+						$exec=$op->{ $test }."(\$obj->$func($args), $value, $comment);";
 					}
 
 					if(defined($list->{$func})) {

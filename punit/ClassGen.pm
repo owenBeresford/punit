@@ -16,6 +16,7 @@ use version;
 our @EXPORT = ();
 our @EXPORT_OK = qw(getFunctionOutro getFunctionIntro getPackageIntro getPackageOutro getSetUp getTearDown getDocs getAll );
 our $VERSION = '0.1.6';
+use Data::Dumper;
 
 sub new {
 	my ($caller) = @_;
@@ -46,7 +47,7 @@ sub getPackageIntro {
 	$sname		=~ s/::/\//g;
 
 	my $out		=<<EOPERL;
-## #!/usr/bin/perl -I/home/owen/punit
+#!/usr/bin/perl -I/home/owen/punit
 # I'm making the testee object in lexical scope (not part of the \$self which is called what?)
 # Replace all the XXX with your code
 use strict;
@@ -117,7 +118,6 @@ sub tearDown {
 }
 
 EOPERL
-
 	return $out;
 }
 	
@@ -152,7 +152,8 @@ sub test$func {
 EOPERL
 	
 		$out	.= $self->getFunctionIntro($func);  
-		$out    .= $list{$func} ."\n";
+		my @annoy=@{$list{$func}};
+		$out    .= "\t".join("\n\t", @annoy) ."\n";
 		$out	.= $self->getFunctionOutro($func);  
 		$out	.=<<EOPERL;
 

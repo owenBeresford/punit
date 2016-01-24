@@ -70,7 +70,7 @@ sub generateTest {
 		if(defined($assert->{$s})) {
 			$decls2{$s}=$assert->{$s};
 		} else {
-			$decls2{$s}="# fillin this test, no assert provided.";
+			$decls2{$s}=["# fillin this test, no assert provided."];
 		}
 	}
 	my $raw		= $self->{gen}->getAll($self->{inClass}, $self->{outClass}, \%decls2);
