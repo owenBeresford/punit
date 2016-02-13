@@ -45,7 +45,7 @@ our $VERSION = '0.2.1';
 # $class is a string, not an object
 	sub listAPI {
 		my ($self, $class) = @_;
-		if( ref $class ne "SCALAR") {
+		if( ref $class ne "") {
 			BadParamException->throw("Can't map an object at present, DO NOT USE IN PRODUCTION CODE");
 		} 
 		my @out;
@@ -91,24 +91,24 @@ our $VERSION = '0.2.1';
 				print "File '$pkg_name' contains no docs.\n" if($main::DEBUG);
 				return [];
 			}
-			$self->munge->setPackage($pkg_name);
+			$self->{munge}->setPackage($pkg_name);
 
 			my $comments = $doc->find( 'PPI::Token::Comment');
 			foreach my $c ( @{$comments}) {
 				my $tt=$c->snext_sibling();
 				if($tt->class eq "PPI::Statement::Sub") {
-					$self->munge->setFunction($tt->name);
+					$self->{munge}->setFunction($tt->name);
 				} else {
-					$self->munge->setFunction('XXXXX');
+					$self->{munge}->setFunction('XXXXX');
 					print "Unable to sniff what function this is attached to.\n" if($main::DEBUG);
 				}
 
 				if( $c->content =~ m/\@assert/i ) {
-					print "Running assert parsing at ".$c->line_number if($main::DEBUG);
-					$self->munge->processAssert($c->content, $list);
+					print "Running assert parsing at ".$c->line_number.".\n" if($main::DEBUG);
+					$self->{munge}->processAssert($c, $list);
 				}
 				if( $c->content =~ m/\@NOTEST/i  ) {
-					$self->munge->processNoTest($c->content, $list);
+					$self->{munge}->processNoTest($c, $list);
 				}
 			}
 			$doc=undef();
@@ -116,7 +116,7 @@ our $VERSION = '0.2.1';
 			return $list; 
 
 		} catch {
-			print("Unknown file '$pkg_name' - shouldn't happen in real use as trapped else where...");
+			print("Unknown file '$pkg_name' - shouldn't happen in real use as trapped else where...\n");
 			return [];
 		}
 	}
@@ -125,7 +125,7 @@ our $VERSION = '0.2.1';
 		my ($self, $name, $data) = @_;
 		
 		if( -f $name ) {			
-			print "Can't create file '$name', it already exists." if($main::DEBUG);
+			print "Can't create file '$name', it already exists.\n" if($main::DEBUG);
 			BadFileException->throw("Can't create file '$name', it already exists.");
 		}
 		my @bits		=split('/', $name);
@@ -133,7 +133,7 @@ our $VERSION = '0.2.1';
 		my $dirname		=join('/', @bits); 
 		if( ! -d $dirname ) {
 			if($main::DEBUG) {
-				print "Can't create file '$name', it already exists."; 
+				print "Can't create file '$name', it already exists.\n"; 
 			} else {
 				mkdir $dirname or BadFileException->throw("Unable to make 't' directory... $dirname ".`pwd`);
 			}
@@ -182,4 +182,5 @@ our $VERSION = '0.2.1';
 
 }
 1;
+
 

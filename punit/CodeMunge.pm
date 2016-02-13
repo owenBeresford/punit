@@ -28,12 +28,12 @@ our $VERSION = '0.2.1';
 
 	sub setFunction {
 		my ($self, $func) = @_;
-		$self->function=$func;
+		$self->{function}=$func;
 	}
 
 	sub setPackage {
 		my ($self, $p) = @_;
-		$self->package=$p;
+		$self->{package}=$p;
 	}
 
 # maybe move this line parsing to PPI as well.
@@ -44,17 +44,25 @@ our $VERSION = '0.2.1';
 		my @match=[];
 		my $count=0;
 
+# @assert $obj->funcC() === $obj "a useful comment on what the test does"
+#	my ($self, $object, $func, $args, $test, $value, $comment )= @_;
 		$count=($chunk->content =~ m/^[# \*\t]*\@assert[ \t]+(\$[a-zA-Z0-9_]+)->([a-zA-Z0-9_]+)\(([^)]*)\)[ \t]*([!=><isa]+)[ \t]*([^ ]+)[ \t]+("[a-zA-Z0-9 '"!£\$%\^&*\(\)]+")/);
-		 @match=($1, $2, $3, $4, $5, $6) if($count>0) ;
+		@match=($1, $2, $3, $4, $5, $6) if($count>0) ;
 
-		$count=($chunk->content =~ m/^[# \*\t]*\@assert[ \t]+(\$[a-zA-Z0-9_]+)->([a-zA-Z0-9_]+)\(([^)]*)\)[ \t]*([!=><isa]+)[ \t]*(.+)/);
-		@match= ($1, $2, $3, $4, $5, "\"".$self->package."#".$chunk->line_number."\"") if($count>0) ;
+		if($count ==0 ){
+			$count=($chunk->content =~ m/^[# \*\t]*\@assert[ \t]+(\$[a-zA-Z0-9_]+)->([a-zA-Z0-9_]+)\(([^)]*)\)[ \t]*([!=><isa]+)[ \t]*(.+)/);
+			@match= ($1, $2, $3, $4, $5, "\"".$self->{package}."#".$chunk->line_number."\"") if($count>0) ;
+		}
+
+		if($count ==0 ){
+			$count=($chunk->content =~ m/^[# \*\t]*\@assert[ \t]+\(([^)]*)\)[ \t]*([!=><isa]+)[ \t]*(.+)[ \t]+("[a-zA-Z0-9 '"!£\$%\^&*\(\)]+")/);
+			@match= ( $self->{package}, $self->{function}, $1, $2, $3, $4) if($count>0) ;
+		}
 	
-		$count=($chunk->content =~ m/^[# \*\t]*\@assert[ \t]+\(([^)]*)\)[ \t]*([!=><isa]+)[ \t]*(.+)[ \t]+("[a-zA-Z0-9 '"!£\$%\^&*\(\)]+")/);
-		@match= ( $self->package, $self->function, $1, $2, $3, $4) if($count>0) ;
-	
-		$count=($chunk->content =~ m/^[# \*\t]*\@assert[ \t]+(\$[a-zA-Z0-9_]+)->([a-zA-Z0-9_]+)\(([^)]*)\)[ \t]*([!=><isa]+)[ \t]*(.+)/);
-		@match= ($self->package, $self->function, $1, $2, $3, "\"".$self->package."#".$chunk->line_number."\"") if($count>0) ;
+		if($count ==0 ){
+			$count=($chunk->content =~ m/^[# \*\t]*\@assert[ \t]+\(([^)]*)\)[ \t]*([!=><isa]+)[ \t]*(.+)/);
+			@match= ($self->{package}, $self->{function}, $1, $2, $3, "\"".$self->{package}."#".$chunk->line_number."\"") if($count>0) ;
+		}
 
 		if($#match==0) {
 			warn "ADD MORE CODE";
@@ -70,8 +78,8 @@ our $VERSION = '0.2.1';
 		
 		my $t=($chunk->content =~ m/^[# \*\t]*\@NOTEST[ \t]+("[a-zA-Z0-9 '"!£\$%\^&*\(\)]+")/);
 		my @match;
-		@match=[ $self->package, $self->function, '', 'noTest', '', $1 ] if ($t>0);
-		@match=[ $self->package, $self->function, '', 'noTest', '', "No comment entered" ] if ($t==0);
+		@match=[ $self->{package}, $self->{function}, '', 'noTest', '', $1 ] if ($t>0);
+		@match=[ $self->{package}, $self->{function}, '', 'noTest', '', "No comment entered" ] if ($t==0);
 		my $exec=$self->{gen}->getTestCode(@match);
 		return $self->_insert(\@match, $exec, $list );
 	}

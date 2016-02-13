@@ -56,7 +56,6 @@ sub getTestCode {
 		'<='=>'assert_true',
 		'noTest' => 'skip',
 	};
-
 	my $exec=undef();
 
 	if($test eq '>' || $test eq '<' || $test eq '>=' || $test eq '<=') {
