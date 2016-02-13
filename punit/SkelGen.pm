@@ -33,6 +33,7 @@ EOTEXT
 package punit::SkelGen;
 use punit::IOAccess;
 use punit::ClassGen;
+use punit::CodeMunge;
 use Exporter 'import';
 use version;
 use Data::Dumper;
@@ -52,7 +53,8 @@ sub new {
 		outClass=>'',
 		gen		=>punit::ClassGen->new()
 			};
-	$self->{IO}=punit::IOAccess->new($private, $self->{gen});
+	my $t=punit::CodeMunge->new($self->{gen} );
+	$self->{IO}=punit::IOAccess->new($private, $t);
 	bless($self, $class);
 
 	$self->{outClass}=$self->_getOutputClass($inCls); 

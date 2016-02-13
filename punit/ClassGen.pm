@@ -54,6 +54,7 @@ sub getTestCode {
 		'>='=>'assert_true',
 		'<'=>'assert_true',
 		'<='=>'assert_true',
+		'noTest' => 'skip',
 	};
 
 	my $exec=undef();
