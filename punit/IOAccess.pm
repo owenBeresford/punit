@@ -7,6 +7,7 @@ package punit::IOAccess;
 use Try::Tiny ();
 use Exporter 'import';
 use version;
+use feature 'current_sub';
 use PPI;
 use B qw( svref_2object );
 use Data::Dumper;
@@ -63,7 +64,8 @@ our $VERSION = '0.2.1';
 
 		my $methods = $self->_list_nonimported_subs($class); 
 		for my $func (@$methods) {
-			print "listAPI: looking at '$func'.\n" if($main::DEBUG);
+			my $thisFunc=(caller(0))[3];
+			print $thisFunc.": looking at '$func'.\n" if($main::DEBUG);
 		
 			next if ($func eq 'new');
 			next if (!$self->{private} && $func =~ m/^_/);

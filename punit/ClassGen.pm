@@ -13,6 +13,7 @@ ASSERT: Some people have weird ideas on how to indent, please don't.  Please per
 package punit::ClassGen;
 use Exporter 'import';
 use version;
+use feature 'current_sub';
 our @EXPORT = ();
 our @EXPORT_OK = qw(getFunctionOutro getFunctionIntro getPackageIntro getPackageOutro getSetUp getTearDown getDocs getAll );
 our $VERSION = '0.1.6';
@@ -42,6 +43,12 @@ sub getFunctionIntro {
 }
 
 sub getTestCode {
+	if($#_ != 6) { 
+		my $thisFunc=(caller(0))[3];
+		print $thisFunc." Missing param ".join( @_);
+		return "YOU STUPIDHEAD";
+	}
+
 	my ($self, $object, $func, $args, $test, $value, $comment )= @_;
 	my $op={
 		'=='=>'assert_equals',
@@ -57,9 +64,11 @@ sub getTestCode {
 		'noTest' => 'skip',
 	};
 	my $exec=undef();
-
 	if($test eq '>' || $test eq '<' || $test eq '>=' || $test eq '<=') {
 		$exec=$op->{ $test }."(\$obj->$func($args) $test $value, $comment);";
+	} elsif($test eq 'noTest' ) {
+		$exec=$op->{ $test }."(  $comment);";
+		
 	} else {
 		$exec=$op->{ $test }."(\$obj->$func($args), $value, $comment);";
 	}

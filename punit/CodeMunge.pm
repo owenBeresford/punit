@@ -7,6 +7,7 @@ package punit::CodeMunge;
 use version;
 use PPI;
 use Data::Dumper;
+use feature 'current_sub';
 
 use Exception::Class (
 	'BaseException',
@@ -78,8 +79,8 @@ our $VERSION = '0.2.1';
 		
 		my $t=($chunk->content =~ m/^[# \*\t]*\@NOTEST[ \t]+("[a-zA-Z0-9 '"!£\$%\^&*\(\)]+")/);
 		my @match;
-		@match=[ $self->{package}, $self->{function}, '', 'noTest', '', $1 ] if ($t>0);
-		@match=[ $self->{package}, $self->{function}, '', 'noTest', '', "No comment entered" ] if ($t==0);
+		@match=( $self->{package}, $self->{function}, '', 'noTest', '', $1 ) if ($t>0);
+		@match=( $self->{package}, $self->{function}, '', 'noTest', '', "\"No comment entered.\"" ) if ($t==0);
 		my $exec=$self->{gen}->getTestCode(@match);
 		return $self->_insert(\@match, $exec, $list );
 	}
