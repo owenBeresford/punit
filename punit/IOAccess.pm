@@ -51,8 +51,12 @@ our $VERSION = '0.2.1';
 		} 
 		my @out;
 		my $fl_name	= module_fs_path($class);
+		
 		if( ! -f $fl_name) {
-			BadFileException->throw("Can't load package $class. \n");
+			$fl_name =~ s/\.pm$/.t/;
+			if( ! -f $fl_name) {
+				BadFileException->throw("Can't load package $class $fl_name. \n");
+			}
 		}
 
 		if(!is_class_loaded($class)) {
@@ -98,7 +102,7 @@ our $VERSION = '0.2.1';
 			my $comments = $doc->find( 'PPI::Token::Comment');
 			foreach my $c ( @{$comments}) {
 				my $tt=$c->snext_sibling();
-				if($tt->class eq "PPI::Statement::Sub") {
+				if($tt and $tt->class eq "PPI::Statement::Sub") {
 					$self->{munge}->setFunction($tt->name);
 				} else {
 					$self->{munge}->setFunction('XXXXX');

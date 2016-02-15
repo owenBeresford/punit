@@ -12,6 +12,11 @@ use feature 'current_sub';
 use Exception::Class (
 	'BaseException',
 
+	'DupLogicException' => {
+		isa         => 'BaseException',
+		description => 'Shouldnt run NoTest and other tests.'
+	},
+
 );
 
 our @EXPORT = ();
@@ -45,8 +50,6 @@ our $VERSION = '0.2.1';
 		my @match=[];
 		my $count=0;
 
-# @assert $obj->funcC() === $obj "a useful comment on what the test does"
-#	my ($self, $object, $func, $args, $test, $value, $comment )= @_;
 		$count=($chunk->content =~ m/^[# \*\t]*\@assert[ \t]+(\$[a-zA-Z0-9_]+)->([a-zA-Z0-9_]+)\(([^)]*)\)[ \t]*([!=><isa]+)[ \t]*([^ ]+)[ \t]+("[a-zA-Z0-9 '"!£\$%\^&*\(\)]+")/);
 		@match=($1, $2, $3, $4, $5, $6) if($count>0) ;
 
@@ -81,6 +84,10 @@ our $VERSION = '0.2.1';
 		my @match;
 		@match=( $self->{package}, $self->{function}, '', 'noTest', '', $1 ) if ($t>0);
 		@match=( $self->{package}, $self->{function}, '', 'noTest', '', "\"No comment entered.\"" ) if ($t==0);
+		if( defined( $list->{ $self->{function} })) {
+			DupLogicException->throw("Dup logic for ". $self->{function});
+		}
+
 		my $exec=$self->{gen}->getTestCode(@match);
 		return $self->_insert(\@match, $exec, $list );
 	}
