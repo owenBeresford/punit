@@ -27,12 +27,13 @@ my $content;
 
 
 {
-package punit::t::CodeMungeTest;
+package punit::t::00CodeMungeTest;
 use punit::TestCase;
 use base 'punit::TestCase';
 use utf8;
 use Data::Dumper;  # while testing the test case, you are bound to need this...
 use punit::ClassGen;
+use Test::Assert ':assert';
 use Test::More;
 use Test::Exception;
 use Try::Tiny ();
@@ -62,15 +63,13 @@ sub tearDown {
 sub testsetFunction {
 	my ($self)		= @_;
 
-	skip(0);
-	LAST:
+	diag("im ignoring this fucntion");
 }
 
 sub testsetPackage {
 	my ($self)		= @_;
 
-	skip(0);
-	LAST:
+	diag("im ignoring this fucntion");
 }
 
 sub testprocessNoTest {
@@ -115,55 +114,55 @@ sub testprocessAssert {
 	assert_true( scalar(keys( $list))==1 );
 	assert_true( defined( $list->{funcA}) );
 	$countA =scalar( @{$list->{funcA}} );
-	assert_same( 1, $countA );
+	assert_equals( 1, $countA );
 
 	$a=punit::t::MockPPIToken->new("# \@assert \$obj->funcB() == 0 ", 42); 
 	$ret=$obj->processAssert($a, $list);
 	assert_true( $ret==0);
-	assert_true( scalar(keys( $list))==1 );
+	assert_true( scalar(keys( $list))==2 );
 	assert_true( defined( $list->{funcA}) );
 	assert_true( defined( $list->{funcB}) );
 	$countA =scalar( @{$list->{funcA}} );
-	assert_same( 1, $countA );
+	assert_equals( 1, $countA );
 
 	$a=punit::t::MockPPIToken->new("# \@assert \$obj->funcA() === 0 ", 42); 
 	$ret=$obj->processAssert($a, $list);
 	assert_true( $ret==0);
-	assert_true( scalar(keys( $list))==1 );
+	assert_true( scalar(keys( $list))==2 );
 	assert_true( defined( $list->{funcA}) );
 	$countA =scalar( @{$list->{funcA}} );
-	assert_same( 2, $countA );
+	assert_equals( 2, $countA );
 
 	$a=punit::t::MockPPIToken->new("# \@assert \$obj->funcA() !== 0 ", 42); 
 	$ret=$obj->processAssert($a, $list);
 	assert_true( $ret==0);
-	assert_true( scalar(keys( $list))==1 );
+	assert_true( scalar(keys( $list))==2 );
 	assert_true( defined( $list->{funcA}) );
 	$countA =scalar( @{$list->{funcA}} );
-	assert_same( 3, $countA );
+	assert_equals( 3, $countA );
 
 	$a=punit::t::MockPPIToken->new("# \@assert \$obj->funcA() isa 'TESTclass' ", 42); 
 	$ret=$obj->processAssert($a, $list);
 	assert_true( $ret==0);
-	assert_true( scalar(keys( $list))==1 );
+	assert_true( scalar(keys( $list))==2 );
 	assert_true( defined( $list->{funcA}) );
 	$countA =scalar( @{$list->{funcA}} );
-	assert_same( 4, $countA );
+	assert_equals( 4, $countA );
 
 	$a=punit::t::MockPPIToken->new("# \@assert \$obj->funcA() >= 0 ", 42); 
 	$ret=$obj->processAssert($a, $list);
 	assert_true( $ret==0);
-	assert_true( scalar(keys( $list))==1 );
+	assert_true( scalar(keys( $list))==2 );
 	assert_true( defined( $list->{funcA}) );
 	$countA =scalar( @{$list->{funcA}} );
-	assert_same( 5, $countA );
+	assert_equals( 5, $countA );
 }
 
 }
 
 # add the "if run from prove, execute... "
 unless(caller()) {
-	my $t		= punit::t::CodeMungeTest ->new();
+	my $t		= punit::t::00CodeMungeTest ->new();
 	$t->run();
 }
 

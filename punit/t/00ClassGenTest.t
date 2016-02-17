@@ -22,7 +22,7 @@ assert_true($t->getPackageIntro('Funcii', 'FunciiTest'), "We can package intro '
 assert_true($t->getPackageOutro('Funcii'), "We can package outro 'Funcii'.");
 
 my $okay =0;
-my $perl =$t->getAll('Funcii', 'FunciiTest', ('I_wanna_get', 'get_down', 'get_get_down'));
+my $perl =$t->getAll('Funcii', 'FunciiTest', {'I_wanna_get'=>[], 'get_down'=>[], 'get_get_down' =>[]});
 assert_true($perl, "We should have a class");
 try {
 	eval($perl);

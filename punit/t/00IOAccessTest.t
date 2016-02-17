@@ -7,14 +7,17 @@ use Test::More;
 use Test::Assert ':assert';
 use Data::Dumper;
 # test::assert uses Exceptions
-use Try::Tiny;
+use Try::Tiny ();
+# this nut is more messy than i would like
+use punit::CodeMunge;
+use punit::ClassGen;
 BEGIN {
 use File::Basename;
 push( @INC, dirname(__FILE__)."/Data/");
 }
 
 use_ok( 'punit::IOAccess');
-my $t= punit::IOAccess->new(0);
+my $t= punit::IOAccess->new(0, punit::CodeMunge->new( punit::ClassGen->new()));
 
 assert_isa('punit::IOAccess', $t, "have right object");
 
@@ -38,15 +41,18 @@ if ( -f $fn ) {
 	diag("Deleted old test results");
 }
 
-my $tt=$t->extractAssert('punit::t::Data::SampleClass');
-assert_equals( scalar(keys(%{$tt})), 2, "Look for asserts in sample file");
+my $tt=$t->extractAssert('punit::t::Data::SampleFullStatements');
+assert_equals( 3, scalar(keys(%{$tt})),  "Look for asserts in sample file");
 my @ttt = values(%{$tt});
 @ttt = map {@$_} @ttt;
-assert_equals( scalar(@ttt), 4, "Look for asserts in sample file 2");
+assert_equals( 9, scalar(@ttt),  "Look for asserts in sample file 2");
 
 assert_true( scalar($t->extractAssert('punit::IOAccess')), "Look for asserts in a file without any");
-assert_true( scalar($t->extractAssert('punit::PANDASTYLE')), "Look for asserts in a bad file");
-
+try {
+	assert_true( scalar($t->extractAssert('punit::PANDASTYLE')), "Look for asserts in a bad file");
+} catch {
+	assert_true(1);
+}
 assert_true($t->writeTestFile($fn, $data), "disk write reported no error" );
 assert_raises(['BadFileException'], sub {$t->writeTestFile($fn, $data) } );
 diag("pass dup test...");
