@@ -66,18 +66,20 @@ our $VERSION = '0.2.1';
 			}
 		}
 
-		my $methods = $self->_list_nonimported_subs($class); 
-		for my $func (@$methods) {
-			my $thisFunc=(caller(0))[3];
-			print $thisFunc.": looking at '$func'.\n" if($main::DEBUG);
+		my $doc = PPI::Document->new($fl_name);
+		my $methods= $doc->find('PPI::Statement::Sub');
+		for my $func (@{$methods} ) {
+			# if( !ref $func eq 'Array') { print "Annoying $func"; break;  }
+
+			my $name=$func->schild(1)->content;
+			print "looking at '$name'.\n" if($main::DEBUG);
 		
-			next if ($func eq 'new');
-			next if (!$self->{private} && $func =~ m/^_/);
+			next if ($name eq 'new');
+			next if (!$self->{private} && $name =~ m/^_/);
 
 # expect to inject hacks here...
-			push(@out, $func);
+			push(@out, $name);
 		}
-		
 		if(wantarray() ) { return @out; }
 		else 			 { return \@out; }
 	}
