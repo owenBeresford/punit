@@ -69,19 +69,50 @@ our $VERSION = '0.2.1';
 		my $doc = PPI::Document->new($fl_name);
 		my $methods= $doc->find('PPI::Statement::Sub');
 		for my $func (@{$methods} ) {
-			# if( !ref $func eq 'Array') { print "Annoying $func"; break;  }
-
 			my $name=$func->schild(1)->content;
 			print "looking at '$name'.\n" if($main::DEBUG);
 		
 			next if ($name eq 'new');
 			next if (!$self->{private} && $name =~ m/^_/);
+# some people put private classes in the same file as the published module.  
+# need to strip these out, or the test crashes
+			next if ($self->_getClass($func) ne $class);
 
 # expect to inject hacks here...
 			push(@out, $name);
 		}
 		if(wantarray() ) { return @out; }
 		else 			 { return \@out; }
+	}
+
+	sub _getClass {
+		my ($self, $codePoint) = @_;
+		my $breakOut=100;		
+		my $t;
+
+		while($codePoint->class ne 'PPI::Statement::Package' &&
+				$codePoint->class ne 'PPI::Document') {
+
+			if(	$codePoint->class eq 'PPI::Structure::Block'  && 
+				$codePoint->schild(0)->class() eq 'PPI::Statement::Package') {
+				$t=$codePoint->schild(0)->content;
+				$t =~ s/^package[ \t]+//;
+				$t =~ s/;$//;
+				return $t;
+			}
+			$codePoint = $codePoint->parent();
+
+			$breakOut--;
+			if($breakOut==0) { 
+				warn "Statement depth >100.  Assume error."; 
+				return undef();
+			}
+		}
+
+		$t=$codePoint->content;
+		$t =~ s/^package[ \t]+//;
+		$t =~ s/;$//;
+		return $t;
 	}
 
 	sub extractAssert {

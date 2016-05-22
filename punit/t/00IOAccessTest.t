@@ -56,12 +56,12 @@ my @ttt = values(%{$tt});
 assert_equals( 9, scalar(@ttt),  "Look for asserts in sample file 2");
 
 assert_true( scalar($t->extractAssert('punit::IOAccess')), "Look for asserts in a file without any");
-try {
-	assert_true( scalar($t->extractAssert('punit::PANDASTYLE')), "Look for asserts in a bad file");
-} catch {
-	diag("CAUGHT missing file ....");
-	assert_true(1);
-}
+#try {
+#	assert_true( scalar($t->extractAssert('punit::PANDASTYLE')), "Look for asserts in a bad file");
+#} catch {
+#	diag("CAUGHT missing file ....");
+#	assert_true(1);
+#};
 # have to turn this off, in DEBUG the software doesn't touch the filesystem
 $DEBUG=0;
 

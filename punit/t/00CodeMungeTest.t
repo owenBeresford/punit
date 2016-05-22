@@ -7,6 +7,7 @@ use warnings;
 
 {
 package punit::t::MockPPIToken;
+our @EXPORT = ('line_number', 'content');
 my $line_number;
 my $content;
 

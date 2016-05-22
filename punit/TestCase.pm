@@ -48,8 +48,7 @@ sub run {
 	}
 
 	my $io		= punit::IOAccess->new();
-	my @funcs 	= $io->listAPI(ref($self) );
-
+	my @funcs 	= $io->listAPI($module);
 	diag("I am module: $module -> run()\n");
 	foreach my $func (@funcs ) {
 #       meta is for Moose
